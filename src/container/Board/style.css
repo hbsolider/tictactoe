@@ -1,0 +1,29 @@
+.board-main{
+   
+}
+.row{
+    display: flex;
+}
+.status{
+    font-size: 1.25em;
+}
+.board{
+    position: relative;
+}
+.control{
+    position: absolute;
+    top:50%;
+    left:50%;
+    transform: translate(-50%,-50%);
+}
+.control button{
+    min-height: 25px;
+    text-transform: capitalize;
+    font-size: large;
+    padding: 5px;
+    cursor: pointer;
+    border: 1px solid black;
+}
+.control button:focus{
+    outline: none;
+}
