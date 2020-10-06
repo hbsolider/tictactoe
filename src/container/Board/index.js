@@ -32,9 +32,6 @@ export default class Board extends Component {
     });
   };
   calculateWinner = (squares) => {
-    if (!squares.includes(null)) {
-      return 1;
-    }
     const lines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -54,6 +51,9 @@ export default class Board extends Component {
       ) {
         return squares[a];
       }
+    }
+    if (!squares.includes(null)) {
+      return 1;
     }
     return null;
   };
