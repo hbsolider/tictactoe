@@ -9,12 +9,13 @@ body{
   position: relative;
 }
 .Game{
+  margin-top: 20vh;
   min-height: 80vh;
   display: flex;
-  justify-content: center;
   align-items: center;
   flex-direction: column;
 }
 .title{
   font-size: 3rem;
+  margin-bottom: 20px;
 }

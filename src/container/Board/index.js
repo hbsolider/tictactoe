@@ -2,79 +2,52 @@ import React, { Component } from "react";
 import Square from "../Square";
 import "./style.css";
 export default class Board extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      squares: Array(9).fill(null),
-      xIsNext: true,
-      board: Array(3).fill(0),
-    };
-  }
-  renderSquare = (i) => {
+  renderSquare = (i,key,current) => {
+    const winner = this.props.winner;
     return (
       <Square
-        value={this.state.squares[i]}
+      key ={key}
+        value={this.props.squares[i]}
         onClick={() => {
           this.handleClick(i);
         }}
+        current={i===current}
+        isWin={winner&&winner!==1&&winner.includes(i)}
       />
     );
   };
   handleClick = (i) => {
-    console.log(this.calculateWinner(this.state.squares));
-    const squares = this.state.squares.slice();
-    if (squares[i] || this.calculateWinner(this.state.squares)) return;
-    squares[i] = this.state.xIsNext ? "X" : "O";
-    this.setState({
-      squares,
-      xIsNext: !this.state.xIsNext,
-    });
+    return this.props.onClick(i)
   };
-  calculateWinner = (squares) => {
-    const lines = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-    for (let i = 0; i < lines.length; i++) {
-      const [a, b, c] = lines[i];
-      if (
-        squares[a] &&
-        squares[a] === squares[b] &&
-        squares[a] === squares[c]
-      ) {
-        return squares[a];
-      }
-    }
-    if (!squares.includes(null)) {
-      return 1;
-    }
-    return null;
-  };
+  
   winnerColor = () => {
-    return this.state.xIsNext ? "blue" : "red";
+    return this.props.xIsNext ? "blue" : "red";
   };
   resetBoard = () => {
-    this.setState({
-      squares: Array(9).fill(null),
+    return this.props.restart()
+  };
+  renderBoard = (opacity) => {
+    const currentSquare = this.props.currentSquare;
+    let arr = Array(this.props.boardLength).fill(null);
+    return arr.map((_, i) => {
+      return (
+        <div className="row" key={i} style={{ opacity }}>
+          {arr.map((_, j) => this.renderSquare(i * 3 + j,j,currentSquare))}
+        </div>
+      );
     });
   };
   render() {
-    const checkWinner = this.calculateWinner(this.state.squares);
-    const color = this.state.xIsNext ? "red" : "blue";
+    const checkWinner = this.props.winner;
+    const color = this.props.xIsNext ? "red" : "blue";
     const opacity = checkWinner ? 0.6 : 1;
+    const xIsNext = this.props.xIsNext;
     return (
       <div className="board-main">
         {checkWinner === null ? (
           <div className="status">
             Next Player :{" "}
-            <span style={{ color }}>{this.state.xIsNext ? "X" : "O"}</span>
+            <span style={{ color }}>{xIsNext ? "X" : "O"}</span>
           </div>
         ) : checkWinner === 1 ? (
           <div className="status">Draw</div>
@@ -82,18 +55,12 @@ export default class Board extends Component {
           <div className="status">
             Winner :{" "}
             <span style={{ color: this.winnerColor() }}>
-              {!this.state.xIsNext ? "X" : "O"}
+              {!xIsNext ? "X" : "O"}
             </span>
           </div>
         )}
         <div className="board">
-          {this.state.board.map((_, i) => (
-            <div className="row" key={i} style={{ opacity }}>
-              {this.renderSquare(i * 3)}
-              {this.renderSquare(i * 3 + 1)}
-              {this.renderSquare(i * 3 + 2)}
-            </div>
-          ))}
+          {this.renderBoard(opacity)}
           <div className="control">
             {checkWinner ? (
               <button
