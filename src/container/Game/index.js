@@ -1,21 +1,18 @@
-import React, { Component } from "react";
+import React, {useState } from "react";
 import Board from "../Board";
 import "./style.css";
-export default class Game extends Component {
-  constructor(props) {
-    super(props);
+export default function Game() {
+  const [history, setHistory] = useState([{
+    squares: Array(9).fill(null),
+    currentSquare: null,
+    winner: null,
+  }]);
+  const [xIsNext, setxIsNext] = useState(true);
+  const [stepNumber, setStepNumber] = useState(0);
+  const [isAscending, setIsAscending] = useState(true);
+  const current = history[stepNumber];
 
-    this.state = {
-      history: [
-        { squares: Array(9).fill(null), currentSquare: null, winner: null },
-      ],
-      xIsNext: true,
-      boardLength: 3,
-      stepNumber: 0,
-      isAscending: true,
-    };
-  }
-  calculateWinner = (squares) => {
+  const calculateWinner = (squares) => {
     const lines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -41,60 +38,59 @@ export default class Game extends Component {
     }
     return null;
   };
-  handleClick = (i) => {
-    const history = this.state.history.slice(0, this.state.stepNumber + 1);
-    const current = history[history.length - 1];
+  const winner = calculateWinner(current.squares);
+  const handleClick = (i) => {
+    const histor = history.slice(0, stepNumber + 1);
+    const current = histor[histor.length - 1];
     const squares = current.squares.slice();
-    if (this.calculateWinner(squares) || squares[i]) {
+    if (calculateWinner(squares) || squares[i]) {
       return;
     }
-    squares[i] = this.state.xIsNext ? "X" : "O";
-    this.setState({
-      history: history.concat([
-        {
-          squares: squares,
-          currentSquare: i,
-          x: i % 3,
-          y: Math.floor(i / 3),
-          player: this.state.xIsNext ? "X" : "O",
-          winner: this.calculateWinner(squares),
-        },
-      ]),
-      xIsNext: !this.state.xIsNext,
-      stepNumber: history.length,
-    });
+    squares[i] = xIsNext ? "X" : "O";
+    setHistory(
+      history.concat({
+        squares: squares,
+        currentSquare: i,
+        x: i % 3,
+        y: Math.floor(i / 3),
+        player: xIsNext ? "X" : "O",
+        winner: calculateWinner(squares),
+      })
+    );
+    setxIsNext(!xIsNext);
+    setStepNumber(history.length);
   };
-  jumpTo = (step) => {
-    this.setState({
-      stepNumber: step,
-      xIsNext: step % 2 === 0,
-    });
+  const jumpTo = (step) => {
+    setStepNumber(step);
+    setxIsNext(step % 2 === 0);
   };
-  reStart = () => {
-    this.setState({
-      history: [{ squares: Array(9).fill(null), currentSquare: null }],
-      stepNumber: 0,
-      xIsNext: true,
-    });
+  const reStart = () => {
+    setHistory([{ squares: Array(9).fill(null), currentSquare: null }]);
+    setStepNumber(0);
+    setxIsNext(true);
   };
-  sortMove = () => {
-    this.setState({
-      isAscending: !this.state.isAscending,
-    });
+  const sortMove = () => {
+    setIsAscending(!isAscending);
   };
-  renderLocation = (player) => {
-    let history = [...this.state.history];
-    let his = this.state.isAscending ? history : history.splice(0).reverse();
+  const renderLocation = (player) => {
+    let histor = [...history];
+    let his = isAscending ? histor : histor.splice(0).reverse();
     let color = player === "X" ? "red" : "blue";
-    let step = this.state.stepNumber;
-    if(!this.state.isAscending){
-      step = his.length - step -1;
+    let step = stepNumber;
+    if (!isAscending) {
+      step = his.length - step - 1;
     }
     return his.map((e, i) => {
       if (e.player === player) {
         return (
-          <button key={i} onClick={() => this.state.isAscending?this.jumpTo(i):this.jumpTo(his.length-i-1)} className={step===i?"current":""}>
-            {this.state.isAscending ? i : his.length - i -1}.{"  "}Move to{" "}
+          <button
+            key={i}
+            onClick={() =>
+              isAscending ? jumpTo(i) : jumpTo(his.length - i - 1)
+            }
+            className={step === i ? "current" : ""}
+          >
+            {isAscending ? i : his.length - i - 1}.{"  "}Move to{" "}
             <span style={{ color }}>
               [{e.x},{e.y}]
             </span>
@@ -104,69 +100,63 @@ export default class Game extends Component {
       return null;
     });
   };
-  render() {
-    const history = this.state.history;
-    const current = history[this.state.stepNumber];
-    const winner = this.calculateWinner(current.squares);
-    return (
-      <div className="game">
-        <div className="game-board">
-          <Board
-            boardLength={3}
-            xIsNext={this.state.xIsNext}
-            squares={current.squares}
-            onClick={this.handleClick}
-            winner={winner}
-            currentSquare={current.currentSquare}
-            restart={this.reStart}
-          />
-        </div>
-        <div className="game-info">
-          {history.length === 1 ? (
-            <div className="title-1">Welcome</div>
-          ) : (
-            <>
-              <div className="status">
-                History
-                <span>
-                  <button onClick={() => this.reStart()}>Restart</button>
-                </span>
-                <span>
-                  <button onClick={() => this.sortMove()}>
-                    Sort move:{" "}
-                    {this.state.isAscending ? "Ascending" : "Decending"}
-                  </button>
-                </span>
-              </div>
-              <div className="info">
-                {this.state.isAscending ? (
-                  <>
-                    <div className="info-x">
-                      <div className="status">X</div>
-                      <div className="move">{this.renderLocation("X")}</div>
-                    </div>
-                    <div className="info-o">
-                      <div className="status">O</div>
-                      <div className="move">{this.renderLocation("O")}</div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="info-o">
-                      <div className="status">O</div>
-                      <div className="move">{this.renderLocation("O")}</div>
-                    </div>
-                    <div className="info-x">
-                      <div className="status">X</div>
-                      <div className="move">{this.renderLocation("X")}</div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </>
-          )}
-        </div>
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board
+          boardLength={3}
+          xIsNext={xIsNext}
+          squares={current.squares}
+          onClick={handleClick}
+          winner={winner}
+          currentSquare={current.currentSquare}
+          restart={reStart}
+        />
       </div>
-    );
-  }
+      <div className="game-info">
+        {history.length === 1 ? (
+          <div className="title-1">Welcome</div>
+        ) : (
+          <>
+            <div className="status">
+              History
+              <span>
+                <button onClick={() => reStart()}>Restart</button>
+              </span>
+              <span>
+                <button onClick={() => sortMove()}>
+                  Sort move: {isAscending ? "Ascending" : "Decending"}
+                </button>
+              </span>
+            </div>
+            <div className="info">
+              {isAscending ? (
+                <>
+                  <div className="info-x">
+                    <div className="status">X</div>
+                    <div className="move">{renderLocation("X")}</div>
+                  </div>
+                  <div className="info-o">
+                    <div className="status">O</div>
+                    <div className="move">{renderLocation("O")}</div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="info-o">
+                    <div className="status">O</div>
+                    <div className="move">{renderLocation("O")}</div>
+                  </div>
+                  <div className="info-x">
+                    <div className="status">X</div>
+                    <div className="move">{renderLocation("X")}</div>
+                  </div>
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
